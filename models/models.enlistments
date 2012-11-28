@@ -1,0 +1,22 @@
+# All lines that have a '#' at position 0 are comments.
+# 
+# Empty lines are skipped. But not if they have extra whitespace.
+# 
+# List all of the objects that are to be read in. Objects and 
+# textures should have the same name, but differing extensions.
+# 
+# Objects are in the following form:
+#	id obj_filename::collidable tx ty tz rx ry rz sx sy sz parent_id
+# 
+# Objects that will be used for physics calculations should be 
+# marked with the '::collidable' tag directly after the name.
+
+# Collidables
+car car::collidable 0 0 0 0 0 0 1 1 1 NULL
+tireFL tire::collidable -.34 .15 -.54 0 3.14159 0 1 1 1 car
+tireFR tire::collidable .34 .15 -.54 0 0 0 1 1 1 car
+tireBL tire::collidable -.34 .15 .475 0 3.14159 0 1 1 1 car
+tireBR tire::collidable .34 .15 .475 0 0 0 1 1 1 car
+
+# Non-collidables
+environment environment 0 0 0 0 0 0 1 1 1 NULL
