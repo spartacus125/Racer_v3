@@ -26,3 +26,5 @@ ipch/*
 Debug/*
 Release/*
 obj/*
+lib/bullet/*.lib
+lib/bullet/*.pdb
