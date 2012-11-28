@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{a76ecc13-ffa0-42a3-a472-37f2805fd467}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{259a34b0-72d5-49e6-9490-817a51f8a139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound">
+      <UniqueIdentifier>{40376d0e-9798-4c95-b15b-aee2619d20d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{d1d20c91-10d0-4869-8f32-b5ffc14ab28a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\kixor_obj">
+      <UniqueIdentifier>{c3632db4-0a59-4528-b806-4e4f0e7b3fd3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Geometry.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputMan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\KineticState.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Matrix4.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ObjectMan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureMan.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vec4.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\old_main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Demos\VehicleDemo\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Demos\VehicleDemo\VehicleDemo.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\kixor_obj\list.cpp">
+      <Filter>lib\kixor_obj</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\kixor_obj\obj_parser.cpp">
+      <Filter>lib\kixor_obj</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\kixor_obj\objLoader.cpp">
+      <Filter>lib\kixor_obj</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\kixor_obj\string_extra.cpp">
+      <Filter>lib\kixor_obj</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\Face.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Geometry.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\InputMan.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\KineticState.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\main.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Matrix4.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ObjectMan.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\TextureMan.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Vec4.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\Demos\VehicleDemo\VehicleDemo.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\kixor_obj\list.h">
+      <Filter>lib\kixor_obj</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\kixor_obj\obj_parser.h">
+      <Filter>lib\kixor_obj</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\kixor_obj\objLoader.h">
+      <Filter>lib\kixor_obj</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\kixor_obj\string_extra.h">
+      <Filter>lib\kixor_obj</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
