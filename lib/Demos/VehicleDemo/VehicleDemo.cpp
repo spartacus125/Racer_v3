@@ -58,12 +58,12 @@ const int maxOverlap = 65535;
 float	gEngineForce = 0.f;
 float	gBreakingForce = 0.f;
 
-float	maxEngineForce = 1000.f;//this should be engine/velocity dependent
+float	maxEngineForce = 2500.f;//this should be engine/velocity dependent
 float	maxBreakingForce = 100.f;
 
 float	gVehicleSteering = 0.f;
-float	steeringIncrement = 0.04f;
-float	steeringClamp = 0.3f;
+float	steeringIncrement = 0.5f;
+float	steeringClamp = 0.5f;
 float	wheelRadius = 0.5f;
 float	wheelWidth = 0.4f;
 float	wheelFriction = 1000;//BT_LARGE_FLOAT;
@@ -96,6 +96,8 @@ m_maxCameraDistance(10.f)
 	m_vehicle = 0;
 	m_wheelShape = 0;
 	m_cameraPosition = btVector3(30,30,30);
+    m_debugMode |= btIDebugDraw::DBG_NoHelpText;
+    resetInput();
 }
 
 VehicleDemo::~VehicleDemo()
@@ -431,8 +433,25 @@ void VehicleDemo::clientMoveAndDisplay()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
-	
-	{			
+    float delta = getDeltaTimeMicroseconds();
+    float dt = delta * 0.000001f;
+    //printf("Delta: %f\n", dt);
+
+	// Get direction of wheel
+    if (left != 0.f || right != 0.f) {
+        gVehicleSteering = min(steeringClamp, max(-steeringClamp, m_vehicle->getSteeringValue(0) + (left + -right) * steeringIncrement * dt));
+    } else {
+        gVehicleSteering = m_vehicle->getSteeringValue(0);
+        if (gVehicleSteering < 0) {
+            gVehicleSteering += steeringIncrement * dt;
+        } else {
+            gVehicleSteering -= steeringIncrement * dt;
+        }
+    }
+    gEngineForce = accel * maxEngineForce;
+    gBreakingForce = brake * maxBreakingForce;
+    
+	{
 		int wheelIndex = 2;
 		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
 		m_vehicle->setBrake(gBreakingForce,wheelIndex);
@@ -449,8 +468,6 @@ void VehicleDemo::clientMoveAndDisplay()
 	}
 
 
-	float dt = getDeltaTimeMicroseconds() * 0.000001f;
-	
 	if (m_dynamicsWorld)
 	{
 		//during idle mode, just run 1 simulation step maximum
@@ -487,24 +504,32 @@ void VehicleDemo::clientMoveAndDisplay()
 
 
 #ifdef USE_QUICKPROF 
+#ifndef NDEBUG
         btProfiler::beginBlock("render"); 
+#endif
 #endif //USE_QUICKPROF 
 
 
 	renderme(); 
 
+#ifndef NDEBUG
 	//optional but useful: debug drawing
 	if (m_dynamicsWorld)
 		m_dynamicsWorld->debugDrawWorld();
+#endif
 
 #ifdef USE_QUICKPROF 
+#ifndef NDEBUG
         btProfiler::endBlock("render"); 
+#endif
 #endif 
 	
 
 	glFlush();
 	glutSwapBuffers();
 
+    // Reset the Input from this cycle
+    pollInput();
 }
 
 
@@ -515,9 +540,11 @@ void VehicleDemo::displayCallback(void)
 
 	renderme();
 
+#ifndef NDEBUG
 //optional but useful: debug drawing
 	if (m_dynamicsWorld)
 		m_dynamicsWorld->debugDrawWorld();
+#endif
 
 	glFlush();
 	glutSwapBuffers();
@@ -552,14 +579,24 @@ void VehicleDemo::specialKeyboardUp(int key, int x, int y)
     {
     case GLUT_KEY_UP :
 		{
-			gEngineForce = 0.f;
+            forward = 0.f;
+            accel = 0.f;
+			//gEngineForce = 0.f;
 		break;
 		}
 	case GLUT_KEY_DOWN :
-		{			
-			gBreakingForce = 0.f; 
+		{
+            brake = 0.f;
+			//gBreakingForce = 0.f; 
+            //gEngineForce = 0.f;
 		break;
 		}
+    case GLUT_KEY_LEFT:
+        left = 0.f;
+        break;
+    case GLUT_KEY_RIGHT:
+        right = 0.f;
+        break;
 	default:
 		DemoApplication::specialKeyboardUp(key,x,y);
         break;
@@ -577,30 +614,44 @@ void VehicleDemo::specialKeyboard(int key, int x, int y)
     {
     case GLUT_KEY_LEFT : 
 		{
-			gVehicleSteering += steeringIncrement;
-			if (	gVehicleSteering > steeringClamp)
-					gVehicleSteering = steeringClamp;
+            left = 1.0f;
+			//gVehicleSteering += steeringIncrement;
+			//if (	gVehicleSteering > steeringClamp)
+			//		gVehicleSteering = steeringClamp;
 
 		break;
 		}
     case GLUT_KEY_RIGHT : 
 		{
-			gVehicleSteering -= steeringIncrement;
-			if (	gVehicleSteering < -steeringClamp)
-					gVehicleSteering = -steeringClamp;
+            right = 1.0f;
+			//gVehicleSteering -= steeringIncrement;
+			//if (	gVehicleSteering < -steeringClamp)
+			//		gVehicleSteering = -steeringClamp;
 
 		break;
 		}
     case GLUT_KEY_UP :
 		{
-			gEngineForce = maxEngineForce;
-			gBreakingForce = 0.f;
+            forward = 1.0f;
+            accel = 1.0f;
+			//gEngineForce = maxEngineForce;
+			//gBreakingForce = 0.f;
 		break;
 		}
 	case GLUT_KEY_DOWN :
-		{			
-			gBreakingForce = maxBreakingForce; 
-			gEngineForce = 0.f;
+		{		
+            brake = 1.0f;
+            /*
+            // If stopped, apply a backwards force
+            printf("Current Speed: %f\n", m_vehicle->getCurrentSpeedKmHour());
+            if (m_vehicle->getCurrentSpeedKmHour() > 0.001) {
+			    gBreakingForce = maxBreakingForce; 
+			    gEngineForce = 0.f;
+            } else {
+                gEngineForce = maxEngineForce * -.5f;
+                gBreakingForce = 0.f;
+            }
+            */
 		break;
 		}
 	default:
@@ -669,3 +720,6 @@ void	VehicleDemo::updateCamera()
 
 }
 
+void VehicleDemo::pollInput() {
+    // IMPLEMENT ME WITH THE JOYSTICK CODE
+}

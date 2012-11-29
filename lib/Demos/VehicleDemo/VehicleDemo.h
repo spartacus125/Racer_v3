@@ -84,6 +84,25 @@ class VehicleDemo : public GlutDemoApplication
 		demo->initPhysics();
 		return demo;
 	}
+
+private:
+
+    // Horrible practice to not pull this into another class, but its easier to just reuse the code they gave us for now.
+    // So here is the input manager's code, essentially.
+	float forward, back, left, right, accel, brake;
+
+    // This should poll any input and update the state methods that need them.
+    void pollInput();
+
+    // This is called at the start only. At runtime, input states should be updated either by the polling of the joystick or the keyboard events
+    void resetInput() {
+        forward = 0;
+        back = 0;
+        left = 0;
+        right = 0;
+        accel = 0;
+        brake = 0;
+    }
 };
 
 #endif //VEHICLE_DEMO_H

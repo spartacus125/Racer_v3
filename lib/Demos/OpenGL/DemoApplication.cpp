@@ -1276,7 +1276,7 @@ void DemoApplication::renderme()
 			showProfileInfo(xOffset,yStart,yIncr);
 
 #ifdef USE_QUICKPROF
-
+            
 		
 			if ( getDebugMode() & btIDebugDraw::DBG_ProfileTimings)
 			{
