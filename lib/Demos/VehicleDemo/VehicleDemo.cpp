@@ -788,7 +788,7 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 	/// Create Dynamic Objects
 	btTransform startTransform;
 	startTransform.setIdentity();
-
+    
 	btScalar	mass(1.f);
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
