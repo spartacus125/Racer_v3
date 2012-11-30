@@ -87,6 +87,8 @@ class VehicleDemo : public GlutDemoApplication
 
 private:
 
+    void createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount);
+
     // Horrible practice to not pull this into another class, but its easier to just reuse the code they gave us for now.
     // So here is the input manager's code, essentially.
 	float forward, back, left, right, accel, brake;

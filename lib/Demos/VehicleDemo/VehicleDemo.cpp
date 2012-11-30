@@ -391,6 +391,13 @@ const float TRIANGLE_SIZE=20.f;
 		}
 	}
 
+
+    // Setup a cube of boxes
+    createCube(-25, -24, -3, 5, 5, 5);
+    // Setup some other random cubes...
+    for (int i = 0; i < 2; i++) {
+        createCube(-100 + rand()/(double)RAND_MAX * 200, -24, -100 + rand()/(double)RAND_MAX * 200, 5, 5, 5);
+    }
 	
 	setCameraDistance(26.f);
 
@@ -718,6 +725,58 @@ void	VehicleDemo::updateCamera()
 
 
 
+}
+
+void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount) {
+	//create a few dynamic rigidbodies
+	// Re-using the same collision is better for memory usage and performance
+
+    btScalar SCALING = 1.0f;
+
+
+	btBoxShape* colShape = new btBoxShape(btVector3(SCALING*1,SCALING*1,SCALING*1));
+	//btCollisionShape* colShape = new btSphereShape(btScalar(1.));
+	m_collisionShapes.push_back(colShape);
+
+	/// Create Dynamic Objects
+	btTransform startTransform;
+	startTransform.setIdentity();
+
+	btScalar	mass(1.f);
+
+	//rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0,0,0);
+	if (isDynamic)
+		colShape->calculateLocalInertia(mass,localInertia);
+
+	float start_x = x - xCount/2;
+	float start_y = y;
+	float start_z = z - zCount/2;
+
+	for (int k=0;k<yCount;k++)
+	{
+		for (int i=0;i<xCount;i++)
+		{
+			for(int j = 0;j<zCount;j++)
+			{
+				startTransform.setOrigin(SCALING*btVector3(
+									btScalar(2.0*i + start_x),
+									btScalar(20+2.0*k + start_y),
+									btScalar(2.0*j + start_z)));
+
+			
+				//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+				btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+				btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,colShape,localInertia);
+				btRigidBody* body = new btRigidBody(rbInfo);
+					
+
+				m_dynamicsWorld->addRigidBody(body);
+			}
+		}
+	}
 }
 
 void VehicleDemo::pollInput() {
