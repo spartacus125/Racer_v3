@@ -94,6 +94,16 @@ void Geometry::GenerateTransform()
 	glMultMatrixf(rotate.get());
 }
 
+void Geometry::SetMesh(btTriangleIndexVertexArray* _mesh)
+{
+	mesh = _mesh;
+}
+
+btTriangleIndexVertexArray* Geometry::GetIndexVertexArray()
+{
+	return mesh;
+}
+
 void Geometry::Draw()
 {
 	glMatrixMode(GL_MODELVIEW);

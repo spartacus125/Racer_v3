@@ -93,6 +93,7 @@ m_cameraHeight(4.f),
 m_minCameraDistance(3.f),
 m_maxCameraDistance(10.f)
 {
+	ObjectMan::GetInstance();
 	m_vehicle = 0;
 	m_wheelShape = 0;
 	m_cameraPosition = btVector3(30,30,30);
@@ -236,11 +237,12 @@ const float TRIANGLE_SIZE=20.f;
 		}
 	}
 	
-	m_indexVertexArrays = new btTriangleIndexVertexArray(totalTriangles,
+	/*m_indexVertexArrays = new btTriangleIndexVertexArray(totalTriangles,
 		gIndices,
 		indexStride,
 		totalVerts,(btScalar*) &m_vertices[0].x(),vertStride);
-
+		*/
+	m_indexVertexArrays = ObjectMan::GetId("environment")->GetIndexVertexArray();
 	bool useQuantizedAabbCompression = true;
 	groundShape = new btBvhTriangleMeshShape(m_indexVertexArrays,useQuantizedAabbCompression);
 	
@@ -299,7 +301,7 @@ const float TRIANGLE_SIZE=20.f;
 
 	//create ground object
 	localCreateRigidBody(0,tr,groundShape);
-
+/*
 #ifdef FORCE_ZAXIS_UP
 //   indexRightAxis = 0; 
 //   indexUpAxis = 2; 
@@ -321,6 +323,14 @@ const float TRIANGLE_SIZE=20.f;
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,1,0));
 #endif
+*/
+	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
+	btCollisionShape* chassisShape = new btConvexTriangleMeshShape(carMeshArray);
+	btCompoundShape* compound = new btCompoundShape();
+	m_collisionShapes.push_back(compound);
+	btTransform localTrans;
+	localTrans.setIdentity();
+	localTrans.setOrigin(btVector3(0, .3, 0));
 
 	compound->addChildShape(localTrans,chassisShape);
 
