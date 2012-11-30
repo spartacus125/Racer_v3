@@ -23,6 +23,10 @@ class btCollisionShape;
 
 #include "GlutDemoApplication.h"
 
+// Bass sound library
+#include "bass.h"
+
+
 ///VehicleDemo shows how to setup and use the built-in raycast vehicle
 class VehicleDemo : public GlutDemoApplication
 {
@@ -85,6 +89,8 @@ class VehicleDemo : public GlutDemoApplication
 		return demo;
 	}
 
+    void keyboardCallback(unsigned char key, int x, int y);
+
 private:
 
     void createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount);
@@ -92,6 +98,7 @@ private:
     // Horrible practice to not pull this into another class, but its easier to just reuse the code they gave us for now.
     // So here is the input manager's code, essentially.
 	float forward, back, left, right, accel, brake;
+    bool horn;
 
     // This should poll any input and update the state methods that need them.
     void pollInput();
@@ -104,7 +111,12 @@ private:
         right = 0;
         accel = 0;
         brake = 0;
+        horn = false;
     }
+
+    HSTREAM hornSound;
+    HSTREAM idleSound;
+    HSTREAM accelSound;
 };
 
 #endif //VEHICLE_DEMO_H

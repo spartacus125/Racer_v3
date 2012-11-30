@@ -91,7 +91,10 @@ m_indexVertexArrays(0),
 m_vertices(0),
 m_cameraHeight(4.f),
 m_minCameraDistance(3.f),
-m_maxCameraDistance(10.f)
+m_maxCameraDistance(10.f),
+hornSound(NULL),
+idleSound(NULL),
+accelSound(NULL)
 {
 	m_vehicle = 0;
 	m_wheelShape = 0;
@@ -474,6 +477,29 @@ void VehicleDemo::clientMoveAndDisplay()
 
 	}
 
+    // If the sounds haven't been initialized, init them and load things
+    if (hornSound == NULL) {
+        // Initialize BASS
+        //printf("glut hwnd: %i\n", FindWindowA("glut", NULL));
+        BASS_Init(-1, 44100, 0, FindWindowA("glut", NULL), 0); // initialize default output device
+        hornSound = BASS_StreamCreateFile(false, "horn.mp3", 0, 0, 0); // create a stream to play an audio file
+        idleSound = BASS_StreamCreateFile(false, "idle.mp3", 0, 0, 0);
+        accelSound = BASS_StreamCreateFile(false, "accel.mp3", 0, 0, 0);
+    }
+
+    // Play sounds based on the input
+    if (accel > 0.f) {
+        BASS_ChannelPlay(accelSound, false);
+        BASS_ChannelStop(idleSound);
+    } else {
+        BASS_ChannelPlay(idleSound, false);
+        BASS_ChannelStop(accelSound);
+    }
+    if (horn) {
+        BASS_ChannelPlay(hornSound, true);
+        horn = false;
+    }
+
 
 	if (m_dynamicsWorld)
 	{
@@ -771,12 +797,20 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 				btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 				btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,colShape,localInertia);
 				btRigidBody* body = new btRigidBody(rbInfo);
-					
+                body->setActivationState(WANTS_DEACTIVATION);
 
 				m_dynamicsWorld->addRigidBody(body);
 			}
 		}
 	}
+}
+
+void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
+    if (key == 'h') {
+        horn = true;
+    } else {
+        DemoApplication::keyboardCallback(key, x, y);
+    }
 }
 
 void VehicleDemo::pollInput() {
