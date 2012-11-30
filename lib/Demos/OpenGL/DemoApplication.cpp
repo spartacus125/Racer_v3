@@ -17,6 +17,7 @@ subject to the following restrictions:
 #include "DemoApplication.h"
 #include "LinearMath/btIDebugDraw.h"
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
+#include "BulletDynamics/Vehicle/btRaycastVehicle.h"
 
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"//picking
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"//picking
