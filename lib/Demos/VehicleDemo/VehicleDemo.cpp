@@ -316,7 +316,7 @@ const float TRIANGLE_SIZE=20.f;
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,0,1));
 #else
-*/	btCollisionShape* chassisShape = new btBoxShape(btVector3(1.f,0.5f,2.f));
+*/	btCollisionShape* chassisShape = new btBoxShape(btVector3(.8f,0.3f,1.2f));
 	m_collisionShapes.push_back(chassisShape);
 
 	btCompoundShape* compound = new btCompoundShape();
