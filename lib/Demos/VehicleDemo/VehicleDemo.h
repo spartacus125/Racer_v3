@@ -22,6 +22,8 @@ class btCollisionShape;
 #include "BulletDynamics/Vehicle/btRaycastVehicle.h"
 
 #include "GlutDemoApplication.h"
+#include "ObjectMan.h"
+#include "Geometry.h"
 
 // Bass sound library
 #include "bass.h"

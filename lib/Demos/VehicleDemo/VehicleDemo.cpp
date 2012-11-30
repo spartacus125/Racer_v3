@@ -96,6 +96,7 @@ hornSound(NULL),
 idleSound(NULL),
 accelSound(NULL)
 {
+	ObjectMan::GetInstance();
 	m_vehicle = 0;
 	m_wheelShape = 0;
 	m_cameraPosition = btVector3(30,30,30);
@@ -239,11 +240,12 @@ const float TRIANGLE_SIZE=20.f;
 		}
 	}
 	
-	m_indexVertexArrays = new btTriangleIndexVertexArray(totalTriangles,
+	/*m_indexVertexArrays = new btTriangleIndexVertexArray(totalTriangles,
 		gIndices,
 		indexStride,
 		totalVerts,(btScalar*) &m_vertices[0].x(),vertStride);
-
+		*/
+	m_indexVertexArrays = ObjectMan::GetId("environment")->GetIndexVertexArray();
 	bool useQuantizedAabbCompression = true;
 	groundShape = new btBvhTriangleMeshShape(m_indexVertexArrays,useQuantizedAabbCompression);
 	
@@ -302,7 +304,7 @@ const float TRIANGLE_SIZE=20.f;
 
 	//create ground object
 	localCreateRigidBody(0,tr,groundShape);
-
+/*
 #ifdef FORCE_ZAXIS_UP
 //   indexRightAxis = 0; 
 //   indexUpAxis = 2; 
@@ -314,7 +316,7 @@ const float TRIANGLE_SIZE=20.f;
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,0,1));
 #else
-	btCollisionShape* chassisShape = new btBoxShape(btVector3(1.f,0.5f,2.f));
+*/	btCollisionShape* chassisShape = new btBoxShape(btVector3(1.f,0.5f,2.f));
 	m_collisionShapes.push_back(chassisShape);
 
 	btCompoundShape* compound = new btCompoundShape();
@@ -323,7 +325,16 @@ const float TRIANGLE_SIZE=20.f;
 	localTrans.setIdentity();
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,1,0));
+/*
 #endif
+	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
+	btCollisionShape* chassisShape = new btConvexTriangleMeshShape(carMeshArray);
+	btCompoundShape* compound = new btCompoundShape();
+	m_collisionShapes.push_back(compound);
+	btTransform localTrans;
+	localTrans.setIdentity();
+	localTrans.setOrigin(btVector3(0, .3, 0));
+*/
 
 	compound->addChildShape(localTrans,chassisShape);
 
@@ -344,7 +355,7 @@ const float TRIANGLE_SIZE=20.f;
 		
 		///never deactivate the vehicle
 		m_carChassis->setActivationState(DISABLE_DEACTIVATION);
-
+		
 		m_dynamicsWorld->addVehicle(m_vehicle);
 
 		float connectionHeight = 1.2f;
@@ -432,6 +443,16 @@ void VehicleDemo::renderme()
 		m_vehicle->getWheelInfo(i).m_worldTransform.getOpenGLMatrix(m);
 		m_shapeDrawer->drawOpenGL(m,m_wheelShape,wheelColor,getDebugMode(),worldBoundsMin,worldBoundsMax);
 	}
+
+	btDefaultMotionState* myMotionState = (btDefaultMotionState*)m_vehicle->getRigidBody()->getMotionState();
+	myMotionState->m_graphicsWorldTrans.getOpenGLMatrix(m);
+
+	btVector3 wireColor(1.f,1.0f,0.5f); //wants deactivation
+
+	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
+	btCollisionShape* chassisShape = new btBvhTriangleMeshShape(carMeshArray, true);
+	
+	m_shapeDrawer->drawOpenGL(m, chassisShape, wireColor, getDebugMode(), worldBoundsMin, worldBoundsMax);
 
 
 	DemoApplication::renderme();

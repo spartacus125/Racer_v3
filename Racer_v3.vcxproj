@@ -85,7 +85,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>lib\bass;lib;lib\kixor_obj;lib\bullet\src;lib\Demos\OpenGL;lib\Glut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib\bass;inc;lib;lib\kixor_obj;lib\bullet\src;lib\Demos\OpenGL;lib\Glut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HAS_EXCEPTIONS=0;GLEW_STATIC;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
@@ -160,7 +160,7 @@ xcopy /y "$(ProjectDir)lib\bass\bass.dll" "$(OutDir)"</Command>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>lib\bass;lib;lib\kixor_obj;lib\bullet\src;lib\Demos\OpenGL;lib\Glut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib\bass;inc\lib;lib\kixor_obj;lib\bullet\src;lib\Demos\OpenGL;lib\Glut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HAS_EXCEPTIONS=0;GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -258,6 +258,9 @@ xcopy /y "$(ProjectDir)lib\bass\bass.dll" "$(OutDir)"</Command>
     <ClInclude Include="lib\kixor_obj\objLoader.h" />
     <ClInclude Include="lib\kixor_obj\obj_parser.h" />
     <ClInclude Include="lib\kixor_obj\string_extra.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="models\models.enlistments" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

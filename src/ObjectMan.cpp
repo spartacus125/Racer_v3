@@ -156,11 +156,18 @@ Geometry* ObjectMan::LoadObject(string id,
 	int num_f = loader->faceCount;
 	vector<Face> faces;
 
+	int* index_of_faces = new int[num_f * 3];
+
+	btScalar* index_of_verts = new btScalar[num_v * 3];
+
 	for (int i = 0; i < num_v; i++)
 	{
 		obj_vector* cur = verts[i];
 		Vec4 point((float)cur->e[0], (float)cur->e[1], (float)cur->e[2]);
 		vertices.push_back(point);
+		index_of_verts[i * 3] = btScalar((float)cur->e[0]);
+		index_of_verts[i * 3 + 1] = btScalar((float)cur->e[1]);
+		index_of_verts[i * 3 + 2] = btScalar((float)cur->e[2]);
 	}
 
 	for (int j = 0; j < num_n; j++)
@@ -181,16 +188,24 @@ Geometry* ObjectMan::LoadObject(string id,
 	{
 		obj_face* cur = face_list[m];
 		Face new_face;
-		
+
 		for (int n = 0; n < cur->vertex_count; n++)
 		{
+			index_of_faces[(m * 3) + n] = cur->vertex_index[n];
 			new_face.vertices.push_back(vertices[cur->vertex_index[n]]);
-			new_face.normals.push_back(normals[cur->normal_index[n]]);
-			new_face.uvs.push_back(uv_points[cur->texture_index[n]]);
+			//new_face.normals.push_back(normals[cur->normal_index[n]]);
+			//new_face.uvs.push_back(uv_points[cur->texture_index[n]]);
 		}
 
 		faces.push_back(new_face);
 	}
+
+	btTriangleIndexVertexArray* mesh = new btTriangleIndexVertexArray(num_f,
+		index_of_faces,
+		3 * sizeof(int),
+		num_v,
+		index_of_verts,
+		3 * sizeof(btScalar));
 
 	Geometry* p = NULL;
 	map<string, Geometry*>::const_iterator parentFound = objectMap.find(parent_id);
@@ -199,6 +214,7 @@ Geometry* ObjectMan::LoadObject(string id,
 	}
 
 	Geometry* geo = new Geometry(id, vertices, normals, uv_points, faces, p);
+	geo->SetMesh(mesh);
 	objectMap.insert(make_pair(id, geo));
 	objects.push_back(geo);
 

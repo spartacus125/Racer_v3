@@ -19,6 +19,7 @@
 #include "KineticState.h"
 #include "Face.h"
 #include "Matrix4.h"
+#include "BulletCollision/CollisionShapes/btTriangleIndexVertexArray.h"
 using namespace std;
 
 class Geometry{
@@ -35,6 +36,7 @@ private:
 	Matrix4 translate;
 	KineticState dynamic_transforms;
 	Geometry* parent;
+	btTriangleIndexVertexArray* mesh;
 
 public:
 	// Constructors
@@ -62,7 +64,8 @@ public:
 	void Translate(float x, float y, float z);
 	void GenerateTransform();
 	void Draw();
-
+	void SetMesh(btTriangleIndexVertexArray* _mesh);
+	btTriangleIndexVertexArray* GetIndexVertexArray();
 };
 
 #endif
