@@ -31,6 +31,7 @@ subject to the following restrictions:
 #include "LinearMath/btQuickprof.h"
 #include "LinearMath/btAlignedObjectArray.h"
 
+class   btCollisionObject;
 class	btCollisionShape;
 class	btDynamicsWorld;
 class	btRigidBody;
@@ -96,7 +97,7 @@ protected:
 	int m_lastKey;
 
 	void showProfileInfo(int& xOffset,int& yStart, int yIncr);
-	void renderscene(int pass);
+	void renderscene(int pass, btCollisionObject* exempt);
 
 	GL_ShapeDrawer*	m_shapeDrawer;
 	bool			m_enableshadows;
@@ -227,7 +228,9 @@ public:
 	
 	virtual void displayCallback();
 
-	virtual 	void renderme();
+	virtual void renderme() { this->renderme(NULL); }
+
+	void renderme(btCollisionObject* exempt);
 
 	virtual		void swapBuffers() = 0;
 

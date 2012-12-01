@@ -141,6 +141,8 @@ VehicleDemo::~VehicleDemo()
 
 	delete m_wheelShape;
 
+	delete m_chassisShape;
+
 	//delete solver
 	delete m_constraintSolver;
 
@@ -316,7 +318,7 @@ const float TRIANGLE_SIZE=20.f;
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,0,1));
 #else
-*/	btCollisionShape* chassisShape = new btBoxShape(btVector3(.8f,0.3f,1.2f));
+	btCollisionShape* chassisShape = new btBoxShape(btVector3(.8f, 0.3f,1.2f));
 	m_collisionShapes.push_back(chassisShape);
 
 	btCompoundShape* compound = new btCompoundShape();
@@ -325,16 +327,20 @@ const float TRIANGLE_SIZE=20.f;
 	localTrans.setIdentity();
 	//localTrans effectively shifts the center of mass with respect to the chassis
 	localTrans.setOrigin(btVector3(0,1,0));
+
+	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
+	m_chassisShape = new btBvhTriangleMeshShape(carMeshArray, true);
 /*
 #endif
+*/
 	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
 	btCollisionShape* chassisShape = new btConvexTriangleMeshShape(carMeshArray);
+	m_chassisShape = new btBvhTriangleMeshShape(carMeshArray, true);
 	btCompoundShape* compound = new btCompoundShape();
 	m_collisionShapes.push_back(compound);
 	btTransform localTrans;
 	localTrans.setIdentity();
 	localTrans.setOrigin(btVector3(0, .3, 0));
-*/
 
 	compound->addChildShape(localTrans,chassisShape);
 
@@ -449,13 +455,10 @@ void VehicleDemo::renderme()
 
 	btVector3 wireColor(1.f,1.0f,0.5f); //wants deactivation
 
-	btTriangleIndexVertexArray* carMeshArray = ObjectMan::GetId("car")->GetIndexVertexArray();
-	btCollisionShape* chassisShape = new btBvhTriangleMeshShape(carMeshArray, true);
-	
-	m_shapeDrawer->drawOpenGL(m, chassisShape, wireColor, getDebugMode(), worldBoundsMin, worldBoundsMax);
+	m_shapeDrawer->drawOpenGL(m, m_chassisShape, wireColor, getDebugMode(), worldBoundsMin, worldBoundsMax);
 
 
-	DemoApplication::renderme();
+	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
 
 }
 

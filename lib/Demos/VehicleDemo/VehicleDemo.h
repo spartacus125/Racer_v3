@@ -35,6 +35,7 @@ class VehicleDemo : public GlutDemoApplication
 	public:
 
 	btRigidBody* m_carChassis;
+	btCollisionShape* m_chassisShape;
 
 	btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
 

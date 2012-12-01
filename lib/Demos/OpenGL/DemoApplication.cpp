@@ -1136,7 +1136,7 @@ void DemoApplication::showProfileInfo(int& xOffset,int& yStart, int yIncr)
 
 
 //
-void	DemoApplication::renderscene(int pass)
+void	DemoApplication::renderscene(int pass, btCollisionObject* exempt)
 {
 	btScalar	m[16];
 	btMatrix3x3	rot;rot.setIdentity();
@@ -1145,6 +1145,12 @@ void	DemoApplication::renderscene(int pass)
 	for(int i=0;i<numObjects;i++)
 	{
 		btCollisionObject*	colObj=m_dynamicsWorld->getCollisionObjectArray()[i];
+
+		if (colObj == exempt)
+		{
+			continue;
+		}
+
 		btRigidBody*		body=btRigidBody::upcast(colObj);
 		if(body&&body->getMotionState())
 		{
@@ -1206,7 +1212,7 @@ void	DemoApplication::renderscene(int pass)
 }
 
 //
-void DemoApplication::renderme()
+void DemoApplication::renderme(btCollisionObject* exempt)
 {
 	myinit();
 
@@ -1218,7 +1224,7 @@ void DemoApplication::renderme()
 		{
 			glClear(GL_STENCIL_BUFFER_BIT);
 			glEnable(GL_CULL_FACE);
-			renderscene(0);
+			renderscene(0, exempt);
 
 			glDisable(GL_LIGHTING);
 			glDepthMask(GL_FALSE);
@@ -1228,10 +1234,10 @@ void DemoApplication::renderme()
 			glStencilFunc(GL_ALWAYS,1,0xFFFFFFFFL);
 			glFrontFace(GL_CCW);
 			glStencilOp(GL_KEEP,GL_KEEP,GL_INCR);
-			renderscene(1);
+			renderscene(1, exempt);
 			glFrontFace(GL_CW);
 			glStencilOp(GL_KEEP,GL_KEEP,GL_DECR);
-			renderscene(1);
+			renderscene(1, exempt);
 			glFrontFace(GL_CCW);
 
 			glPolygonMode(GL_FRONT,GL_FILL);
@@ -1250,7 +1256,7 @@ void DemoApplication::renderme()
 			glStencilFunc( GL_NOTEQUAL, 0, 0xFFFFFFFFL );
 			glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 			glDisable(GL_LIGHTING);
-			renderscene(2);
+			renderscene(2, exempt);
 			glEnable(GL_LIGHTING);
 			glDepthFunc(GL_LESS);
 			glDisable(GL_STENCIL_TEST);
@@ -1259,7 +1265,7 @@ void DemoApplication::renderme()
 		else
 		{
 			glDisable(GL_CULL_FACE);
-			renderscene(0);
+			renderscene(0, exempt);
 		}
 
 		int	xOffset = 10;
