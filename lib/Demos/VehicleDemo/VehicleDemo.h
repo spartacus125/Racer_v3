@@ -96,11 +96,11 @@ class VehicleDemo : public GlutDemoApplication
 
 private:
 
-    void createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount);
+    void createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount, btScalar scaling = 1.0f);
 
     // Horrible practice to not pull this into another class, but its easier to just reuse the code they gave us for now.
     // So here is the input manager's code, essentially.
-	float forward, back, steering, accel, brake;
+	float forward, back, steering, accel, brake, boost;
     bool horn;
 
     // This should poll any input and update the state methods that need them.
@@ -114,9 +114,12 @@ private:
         accel = 0;
         brake = 0;
         horn = false;
+        boost = 0;
     }
 
     void setVibrate(float percent = 0.0f);
+
+    static void tickCallback(btDynamicsWorld *world, btScalar timeStep);
 
     HSTREAM hornSound;
     HSTREAM idleSound;

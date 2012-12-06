@@ -110,6 +110,7 @@ accelSound(NULL)
 	m_cameraPosition = btVector3(30,30,30);
     m_debugMode |= btIDebugDraw::DBG_NoHelpText;
     resetInput();
+    
 }
 
 VehicleDemo::~VehicleDemo()
@@ -309,11 +310,12 @@ const float TRIANGLE_SIZE=20.f;
 	tr.setOrigin(btVector3(0,-64.5f,0));
 
 #endif //
-
+    
 	m_collisionShapes.push_back(groundShape);
 
 	//create ground object
-	localCreateRigidBody(0,tr,groundShape);
+	btRigidBody* groundBody = localCreateRigidBody(0,tr,groundShape);
+    
 /*
 #ifdef FORCE_ZAXIS_UP
 //   indexRightAxis = 0; 
@@ -421,13 +423,17 @@ const float TRIANGLE_SIZE=20.f;
 
 
     // Setup a cube of boxes
+    createCube(0, -10, 0, 10, 10, 10, 5);
     createCube(-25, -24, -3, 5, 5, 5);
     // Setup some other random cubes...
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
         createCube(-100 + rand()/(double)RAND_MAX * 200, -24, -100 + rand()/(double)RAND_MAX * 200, 5, 5, 5);
     }
 	
 	setCameraDistance(26.f);
+
+    // And then somewhere after you construct the world:
+    m_dynamicsWorld->setInternalTickCallback(tickCallback);
 
 }
 
@@ -490,7 +496,7 @@ void VehicleDemo::clientMoveAndDisplay()
             gVehicleSteering -= steeringIncrement * dt;
         }
     }
-    gEngineForce = accel * maxEngineForce;
+    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
     gBreakingForce = brake * maxBreakingForce;
     
 	{
@@ -805,14 +811,11 @@ void	VehicleDemo::updateCamera()
 
 }
 
-void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount) {
+void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount, btScalar scaling) {
 	//create a few dynamic rigidbodies
 	// Re-using the same collision is better for memory usage and performance
 
-    btScalar SCALING = 1.0f;
-
-
-	btBoxShape* colShape = new btBoxShape(btVector3(SCALING*1,SCALING*1,SCALING*1));
+	btBoxShape* colShape = new btBoxShape(btVector3(scaling*1,scaling*1,scaling*1));
 	//btCollisionShape* colShape = new btSphereShape(btScalar(1.));
 	m_collisionShapes.push_back(colShape);
 
@@ -839,7 +842,7 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 		{
 			for(int j = 0;j<zCount;j++)
 			{
-				startTransform.setOrigin(SCALING*btVector3(
+				startTransform.setOrigin(scaling*btVector3(
 									btScalar(2.0*i + start_x),
 									btScalar(20+2.0*k + start_y),
 									btScalar(2.0*j + start_z)));
@@ -886,10 +889,17 @@ void VehicleDemo::pollInput() {
     } else {
         accel = 0.0f;
     }
-    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B) {
+    if (controllerState.Gamepad.wButtons & (XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_X)) {
         brake = 1.0f;
     } else {
         brake = 0.0f;
+    }
+
+    // Boost
+    if (controllerState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
+        boost = controllerState.Gamepad.bRightTrigger / 255.0f;
+    } else {
+        boost = 0.0f;
     }
 
     // Horn!
@@ -920,4 +930,30 @@ void VehicleDemo::setVibrate(float percent) {
 
     // Vibrate the controller
     XInputSetState(0, &vibration);
+}
+
+void VehicleDemo::tickCallback(btDynamicsWorld *world, btScalar timeStep) {
+    //Assume world->stepSimulation or world->performDiscreteCollisionDetection has been called
+    /*
+	int numManifolds = world->getDispatcher()->getNumManifolds();
+	for (int i=0;i<numManifolds;i++)
+	{
+		btPersistentManifold* contactManifold =  world->getDispatcher()->getManifoldByIndexInternal(i);
+		const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
+		const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+	
+		int numContacts = contactManifold->getNumContacts();
+		for (int j=0;j<numContacts;j++)
+		{
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.getDistance()<0.f)
+			{
+				const btVector3& ptA = pt.getPositionWorldOnA();
+				const btVector3& ptB = pt.getPositionWorldOnB();
+				const btVector3& normalOnB = pt.m_normalWorldOnB;
+			}
+		}
+	}
+    printf("%i things collided\n", numManifolds);
+    */
 }
