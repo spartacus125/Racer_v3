@@ -13,6 +13,6 @@ int main(int argc,char** argv)
         vehicleDemo->initPhysics(); 
 		vehicleDemo->getDynamicsWorld()->setDebugDrawer(&gDebugDrawer);
 
-        return glutmain(argc, argv,640,480,"Bullet Vehicle Demo. http://www.continuousphysics.com/Bullet/phpBB2/", vehicleDemo);
+        return glutmain(argc, argv,640,480,"Racer - CS 455", vehicleDemo);
 }
 
