@@ -69,15 +69,6 @@ GLvoid *font_style = GLUT_BITMAP_HELVETICA_12;
 //-------------------------------------------------------------------------
 void DemoApplication::printw2d (float x, float y, char* format, ...)
 {
-	// Switch to an Orthographic View
-	glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, m_glutScreenWidth, 0, m_glutScreenHeight);
-    glScalef(1, -1, 1);
-    glTranslatef(0, -m_glutScreenHeight, 0);
-    glMatrixMode(GL_MODELVIEW);
-
 	// Write Text
     va_list args;   //  Variable argument list
     int len;        // String length
@@ -100,6 +91,17 @@ void DemoApplication::printw2d (float x, float y, char* format, ...)
     //  End using variable argument list
     va_end(args);
 
+	// Switch to an Orthographic View
+	glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, m_glutScreenWidth, 0, m_glutScreenHeight);
+    glScalef(1, -1, 1);
+    glTranslatef(0, -m_glutScreenHeight, 0);
+    glMatrixMode(GL_MODELVIEW);
+
+	glDisable(GL_DEPTH_TEST);
+
     glRasterPos2i(x, y);
     len = strlen(text);
     for (int i=0; i < len; i++)
@@ -107,15 +109,16 @@ void DemoApplication::printw2d (float x, float y, char* format, ...)
         glutBitmapCharacter(font_style, text[i]);
     }
 
-    //  Free the allocated memory for the string
-    free(text);
-
 	// Switch back to Projection View
+
+	glEnable(GL_DEPTH_TEST);
+
 	glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
-	
-	glFlush();
+
+    //  Free the allocated memory for the string
+    free(text);
 }
 void DemoApplication::printw3d (float x, float y, float z, char* format, ...){
 	va_list args;   //  Variable argument list

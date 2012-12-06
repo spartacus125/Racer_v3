@@ -456,7 +456,7 @@ void VehicleDemo::renderme()
 
 
 	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
-	DemoApplication::printw2d(200, 200, "char: %c, decimal: %d, float: %f, string: %s", 'X', 1618, 1.618, "text");
+	DemoApplication::printw2d(200, 200, "THIS IS SUPPOSED TO WORK!!!");
 }
 
 void VehicleDemo::clientMoveAndDisplay()
