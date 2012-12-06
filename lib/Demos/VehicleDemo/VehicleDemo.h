@@ -94,6 +94,8 @@ class VehicleDemo : public GlutDemoApplication
 	}
 
     void keyboardCallback(unsigned char key, int x, int y);
+    
+	void keyboardUpCallback(unsigned char key, int x, int y);
 
 private:
 

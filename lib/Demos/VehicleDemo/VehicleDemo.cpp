@@ -907,12 +907,25 @@ void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
 	case '-':
 		wheelFriction -= 1;
 		break;
+    case 'b':
+        boost = 1.0f;
+        break;
 	default:
 		DemoApplication::keyboardCallback(key, x, y);
 		break;
 	}
 }
 
+void VehicleDemo::keyboardUpCallback(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'b':
+        boost = 0.0f;
+        break;
+    default:
+        DemoApplication::keyboardUpCallback(key, x, y);
+        break;
+    }
+}
 
 // Tell the compiler to load XInput.lib for the xbox controller support
 #pragma comment(lib, "XInput.lib")
