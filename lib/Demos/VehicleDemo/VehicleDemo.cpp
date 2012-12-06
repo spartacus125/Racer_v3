@@ -77,8 +77,6 @@ btScalar suspensionRestLength(0.6);
 
 #define CUBE_HALF_EXTENTS 1
 
-
-
 ////////////////////////////////////
 
 
@@ -427,7 +425,6 @@ const float TRIANGLE_SIZE=20.f;
 //to be implemented by the demo
 void VehicleDemo::renderme()
 {
-	
 	updateCamera();
 
 	btScalar m[16];
@@ -459,7 +456,7 @@ void VehicleDemo::renderme()
 
 
 	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
-
+	DemoApplication::printw2d(200, 200, "char: %c, decimal: %d, float: %f, string: %s", 'X', 1618, 1.618, "text");
 }
 
 void VehicleDemo::clientMoveAndDisplay()
