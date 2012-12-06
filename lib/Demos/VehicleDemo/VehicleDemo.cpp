@@ -109,7 +109,6 @@ accelSound(NULL)
 	m_cameraPosition = btVector3(30,30,30);
     m_debugMode |= btIDebugDraw::DBG_NoHelpText;
     resetInput();
-    
 }
 
 VehicleDemo::~VehicleDemo()
@@ -476,6 +475,11 @@ void VehicleDemo::renderme()
 	//glDisable(GL_COLOR_MATERIAL);
 	//glDisable(GL_TEXTURE_GEN_T);
 	//glDisable(GL_TEXTURE_GEN_R);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    GLfloat lightPosition[] = {50.0f, 30.0f, 50.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 			
 	DrawObject(m, CAR);
 
