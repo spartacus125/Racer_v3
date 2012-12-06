@@ -106,13 +106,21 @@ btTriangleIndexVertexArray* Geometry::GetIndexVertexArray()
 
 void Geometry::Draw()
 {
+	glMatrixMode(GL_TEXTURE);
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
+	glLoadIdentity();
+	//glScalef(.25, .25, .25);
 	glMatrixMode(GL_MODELVIEW);
 	// Save matrix state
-	glPushMatrix();
-
-	GenerateTransform();
-
+	//glPushMatrix();
+	//GenerateTransform();
 	GLuint texid = TextureMan::GetInstance()->Get(id);
+	//glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glBegin(GL_TRIANGLES);
 
@@ -131,9 +139,9 @@ void Geometry::Draw()
 			glVertex3f(vertex[0], vertex[1], vertex[2]);
 		}
 	}
-
+	
 	glEnd();
 
 	// Undo all transforms
-	glPopMatrix();
+	//glPopMatrix();
 }

@@ -50,6 +50,8 @@ void ObjectMan::UpdateObjectsWithInput()
 
 ObjectMan::ObjectMan()
 {
+	glEnable(GL_TEXTURE_2D);
+	
 	LoadObjects();
 	cout << "Collidable Objects:" << endl;
 	for (int i = 0; i < collidables.size(); i++)
@@ -182,6 +184,9 @@ Geometry* ObjectMan::LoadObject(string id,
 		obj_vector* cur = uvs[k];
 		Vec4 uv_point((float)cur->e[0], (float)cur->e[1], 0);
 		uv_points.push_back(uv_point);
+		//if (id == "car") {
+		//	printf("UV: %f\t%f\n", uv_point[0], uv_point[1]);
+		//}
 	}
 
 	for (int m = 0; m < num_f; m++)
@@ -193,8 +198,8 @@ Geometry* ObjectMan::LoadObject(string id,
 		{
 			index_of_faces[(m * 3) + n] = cur->vertex_index[n];
 			new_face.vertices.push_back(vertices[cur->vertex_index[n]]);
-			//new_face.normals.push_back(normals[cur->normal_index[n]]);
-			//new_face.uvs.push_back(uv_points[cur->texture_index[n]]);
+			new_face.normals.push_back(normals[cur->normal_index[n]]);
+			new_face.uvs.push_back(uv_points[cur->texture_index[n]]);
 		}
 
 		faces.push_back(new_face);
@@ -234,24 +239,7 @@ Geometry* ObjectMan::LoadObject(string id,
 
 void ObjectMan::LoadTexture(string id, string name)
 {
-	string tex = MODELSPATH + name + TEXEXT;
-	cout << "\t" << tex << "...";
-	GLuint texId;
-
-	if (TextureMan::GetInstance()->Get(id) != 0)
-	{
-		cout << "Previously loaded." << endl;
-		return;
-	}
-
-	bool success = NeHeLoadBitmap(LPTSTR(tex.c_str()), texId);
-	if(!success)
-	{
-		cout << "Unsuccessful." << endl;
-		return;
-	}
-	TextureMan::GetInstance()->Add(id, texId);
-	cout << "DONE." << endl;
+	TextureMan::GetInstance()->Preload(id, name);
 }
 
 Geometry* ObjectMan::getId(string id) {

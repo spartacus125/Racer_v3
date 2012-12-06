@@ -27,6 +27,7 @@ using namespace std;
 class TextureMan
 {
 private:
+	map<string, string> toLoad;
 	map<string, GLuint> textures;
 	static TextureMan* instance;
 	TextureMan();
@@ -41,6 +42,7 @@ public:
 		return instance;
 	}
 
+	void Preload(string id, string filename);
 	void Add(string id, GLuint tex_id);
 	GLuint Get(string id);
 };
