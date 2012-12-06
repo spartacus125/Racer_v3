@@ -119,7 +119,8 @@
       <Command>xcopy /y "$(ProjectDir)build_keep\*" "$(OutDir)"
 xcopy /y "$(ProjectDir)sound\*" "$(OutDir)"
 xcopy /y "$(ProjectDir)lib\bass\bass.dll" "$(OutDir)"
-xcopy /y "$(ProjectDir)models\*" "$(OutDir)models\"</Command>
+xcopy /y "$(ProjectDir)models\*" "$(OutDir)models\"
+xcopy /y "$(ProjectDir)sound\*" "$(ProjectDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,7 +194,8 @@ xcopy /y "$(ProjectDir)models\*" "$(OutDir)models\"</Command>
       <Command>xcopy /y "$(ProjectDir)build_keep\*" "$(OutDir)"
 xcopy /y "$(ProjectDir)sound\*" "$(OutDir)"
 xcopy /y "$(ProjectDir)lib\bass\bass.dll" "$(OutDir)"
-xcopy /y "$(ProjectDir)models\*" "$(OutDir)models\"</Command>
+xcopy /y "$(ProjectDir)models\*" "$(OutDir)models\"
+xcopy /y "$(ProjectDir)sound\*" "$(ProjectDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
