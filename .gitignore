@@ -28,3 +28,6 @@ Release/*
 obj/*
 lib/bullet/*.lib
 lib/bullet/*.pdb
+
+# Sound Files in root
+*.mp3

@@ -67,14 +67,14 @@ float	gEngineForce = 0.f;
 float	gBreakingForce = 0.f;
 
 float	maxEngineForce = 2500.f;//this should be engine/velocity dependent
-float	maxBreakingForce = 100.f;
+float	maxBreakingForce = 200.f;
 
 float	gVehicleSteering = 0.f;
-float	steeringIncrement = 0.5f;
-float	steeringClamp = 0.5f;
+float	steeringIncrement = .1f;
+float	steeringClamp = .25f;
 float	wheelRadius = 0.5f;
 float	wheelWidth = 0.4f;
-float	wheelFriction = 1000;//BT_LARGE_FLOAT;
+float	wheelFriction = 10;//BT_LARGE_FLOAT;
 float	suspensionStiffness = 20.f;
 float	suspensionDamping = 2.3f;
 float	suspensionCompression = 4.4f;
@@ -109,7 +109,6 @@ accelSound(NULL)
 	m_cameraPosition = btVector3(30,30,30);
     m_debugMode |= btIDebugDraw::DBG_NoHelpText;
     resetInput();
-    
 }
 
 VehicleDemo::~VehicleDemo()
@@ -451,7 +450,7 @@ void VehicleDemo::renderme()
 	btVector3	worldBoundsMin,worldBoundsMax;
 	getDynamicsWorld()->getBroadphase()->getBroadphaseAabb(worldBoundsMin,worldBoundsMax);
 
-
+	bool inAir = false;
 
 	for (i=0;i<m_vehicle->getNumWheels();i++)
 	{
@@ -460,6 +459,9 @@ void VehicleDemo::renderme()
 		//draw wheels (cylinders)
 		m_vehicle->getWheelInfo(i).m_worldTransform.getOpenGLMatrix(m);
 		m_shapeDrawer->drawOpenGL(m,m_wheelShape,wheelColor,getDebugMode(),worldBoundsMin,worldBoundsMax);
+
+		btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
+		wheel.m_frictionSlip = wheelFriction;
 	}
 
 	btDefaultMotionState* myMotionState = (btDefaultMotionState*)m_vehicle->getRigidBody()->getMotionState();
@@ -473,6 +475,12 @@ void VehicleDemo::renderme()
 	//glDisable(GL_COLOR_MATERIAL);
 	//glDisable(GL_TEXTURE_GEN_T);
 	//glDisable(GL_TEXTURE_GEN_R);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    GLfloat lightPosition[] = {50.0f, 30.0f, 50.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    glShadeModel(GL_SMOOTH);
 			
 	DrawObject(m, CAR);
 
@@ -486,7 +494,10 @@ void VehicleDemo::renderme()
 				ao++;
 		score += (ao-1);
 		// Draw the Score to the screen
-		DemoApplication::printw2d(10, 10, "SCORE: %i", score);
+		DemoApplication::printw2d(20, 20, "SCORE: %i", score);
+		DemoApplication::printw2d(20, 40, "SKID VALUE: %i", m_vehicle->getWheelInfo(0).m_skidInfo);
+		DemoApplication::printw2d(20, 60, "wheelFriction: %f", wheelFriction);
+		DemoApplication::printw2d(20, 80, "SPEED: %f km/h", m_vehicle->getCurrentSpeedKmHour());
 	}
 
 	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
@@ -511,37 +522,7 @@ void VehicleDemo::clientMoveAndDisplay()
     float delta = getDeltaTimeMicroseconds();
     float dt = delta * 0.000001f;
     //printf("Delta: %f\n", dt);
-
-	// Get direction of wheel
-    if (steering != 0.0f) {
-        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * dt));
-    } else {
-        gVehicleSteering = m_vehicle->getSteeringValue(0);
-        if (gVehicleSteering < 0) {
-            gVehicleSteering += steeringIncrement * dt;
-        } else {
-            gVehicleSteering -= steeringIncrement * dt;
-        }
-    }
-    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
-    gBreakingForce = brake * maxBreakingForce;
     
-	{
-		int wheelIndex = 2;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
-		m_vehicle->setBrake(gBreakingForce,wheelIndex);
-		wheelIndex = 3;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
-		m_vehicle->setBrake(gBreakingForce,wheelIndex);
-
-
-		wheelIndex = 0;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
-		wheelIndex = 1;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
-
-	}
-
     // Speed cap - 200 Km/H
     btVector3 velocity = m_vehicle->getRigidBody()->getLinearVelocity();
     btScalar speed = velocity.length();
@@ -560,6 +541,39 @@ void VehicleDemo::clientMoveAndDisplay()
     } else {
         setVibrate(0.0f);
     }
+
+	// Get direction of wheel
+    if (steering != 0.0f) {
+        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * 4 * dt));
+    } else {
+        gVehicleSteering = m_vehicle->getSteeringValue(0);
+        if (gVehicleSteering < 0) {
+            gVehicleSteering += steeringIncrement * dt;
+        } else {
+            gVehicleSteering -= steeringIncrement * dt;
+        }
+    }
+    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
+    gBreakingForce = brake * maxBreakingForce;
+    if (speed < 5.0f && accel < 1.0f) {
+        gEngineForce = brake * maxEngineForce * -0.5f;
+    }
+
+	{
+		int wheelIndex = 2;
+		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->setBrake(gBreakingForce,wheelIndex);
+		wheelIndex = 3;
+		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->setBrake(gBreakingForce,wheelIndex);
+
+
+		wheelIndex = 0;
+		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+		wheelIndex = 1;
+		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+
+	}
 
     // If the sounds haven't been initialized, init them and load things
     if (hornSound == NULL) {
@@ -888,13 +902,35 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 }
 
 void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
-    if (key == 'h') {
-        horn = true;
-    } else {
-        DemoApplication::keyboardCallback(key, x, y);
-    }
+	switch(key){
+	case 'h':
+		horn = true;
+		break;
+	case '+':
+		wheelFriction += 1;
+		break;
+	case '-':
+		wheelFriction -= 1;
+		break;
+    case 'b':
+        boost = 1.0f;
+        break;
+	default:
+		DemoApplication::keyboardCallback(key, x, y);
+		break;
+	}
 }
 
+void VehicleDemo::keyboardUpCallback(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'b':
+        boost = 0.0f;
+        break;
+    default:
+        DemoApplication::keyboardUpCallback(key, x, y);
+        break;
+    }
+}
 
 // Tell the compiler to load XInput.lib for the xbox controller support
 #pragma comment(lib, "XInput.lib")
