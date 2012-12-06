@@ -13,6 +13,14 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+// xbox controller includes
+// No MFC
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+//#include <MMSystem.h>
+#include <Xinput.h>
+#include <limits.h>
+
 /// September 2006: VehicleDemo is work in progress, this file is mostly just a placeholder
 /// This VehicleDemo file is very early in development, please check it later
 /// One todo is a basic engine model:
@@ -72,12 +80,12 @@ float	suspensionDamping = 2.3f;
 float	suspensionCompression = 4.4f;
 float	rollInfluence = 0.1f;//1.0f;
 
+int score = 0;
+
 
 btScalar suspensionRestLength(0.6);
 
 #define CUBE_HALF_EXTENTS 1
-
-
 
 ////////////////////////////////////
 
@@ -101,6 +109,7 @@ accelSound(NULL)
 	m_cameraPosition = btVector3(30,30,30);
     m_debugMode |= btIDebugDraw::DBG_NoHelpText;
     resetInput();
+    
 }
 
 VehicleDemo::~VehicleDemo()
@@ -300,11 +309,12 @@ const float TRIANGLE_SIZE=20.f;
 	tr.setOrigin(btVector3(0,-64.5f,0));
 
 #endif //
-
+    
 	m_collisionShapes.push_back(groundShape);
 
 	//create ground object
-	localCreateRigidBody(0,tr,groundShape);
+	btRigidBody* groundBody = localCreateRigidBody(0,tr,groundShape);
+    
 /*
 #ifdef FORCE_ZAXIS_UP
 //   indexRightAxis = 0; 
@@ -412,13 +422,17 @@ const float TRIANGLE_SIZE=20.f;
 
 
     // Setup a cube of boxes
+    createCube(0, -10, 0, 10, 10, 10, 5);
     createCube(-25, -24, -3, 5, 5, 5);
     // Setup some other random cubes...
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
         createCube(-100 + rand()/(double)RAND_MAX * 200, -24, -100 + rand()/(double)RAND_MAX * 200, 5, 5, 5);
     }
 	
 	setCameraDistance(26.f);
+
+    // And then somewhere after you construct the world:
+    m_dynamicsWorld->setInternalTickCallback(tickCallback);
 
 }
 
@@ -426,7 +440,6 @@ const float TRIANGLE_SIZE=20.f;
 //to be implemented by the demo
 void VehicleDemo::renderme()
 {
-	
 	updateCamera();
 
 	btScalar m[16];
@@ -463,6 +476,19 @@ void VehicleDemo::renderme()
 			
 	DrawObject(m, CAR);
 
+	// UI TEXT CODE
+	{
+		// Calculate Score
+		int ao = 0;
+		btCollisionObjectArray objects = m_dynamicsWorld->getCollisionObjectArray();
+		for(int i=0;i<objects.size();i++)
+			if(objects[i]->isActive())
+				ao++;
+		score += (ao-1);
+		// Draw the Score to the screen
+		DemoApplication::printw2d(10, 10, "SCORE: %i", score);
+	}
+
 	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
 	//  Uncomment this line to see the convex hull rendered with the car
 	//DemoApplication::renderme();
@@ -487,8 +513,8 @@ void VehicleDemo::clientMoveAndDisplay()
     //printf("Delta: %f\n", dt);
 
 	// Get direction of wheel
-    if (left != 0.f || right != 0.f) {
-        gVehicleSteering = min(steeringClamp, max(-steeringClamp, m_vehicle->getSteeringValue(0) + (left + -right) * steeringIncrement * dt));
+    if (steering != 0.0f) {
+        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * dt));
     } else {
         gVehicleSteering = m_vehicle->getSteeringValue(0);
         if (gVehicleSteering < 0) {
@@ -497,7 +523,7 @@ void VehicleDemo::clientMoveAndDisplay()
             gVehicleSteering -= steeringIncrement * dt;
         }
     }
-    gEngineForce = accel * maxEngineForce;
+    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
     gBreakingForce = brake * maxBreakingForce;
     
 	{
@@ -516,6 +542,25 @@ void VehicleDemo::clientMoveAndDisplay()
 
 	}
 
+    // Speed cap - 200 Km/H
+    btVector3 velocity = m_vehicle->getRigidBody()->getLinearVelocity();
+    btScalar speed = velocity.length();
+    btScalar maxSpeed = 75.0f;
+    /* Appears to break things.
+    if (speed > maxSpeed) {
+        velocity *= speed / maxSpeed;
+        speed = velocity.length();
+        m_vehicle->getRigidBody()->setLinearVelocity(velocity);
+    }
+    */
+    
+    // Update vibration state, currently purely based on speed.
+    if (speed > 25.0f) {
+        setVibrate(min((speed - 25.0f) / (maxSpeed - 25.0f), 1.0f));
+    } else {
+        setVibrate(0.0f);
+    }
+
     // If the sounds haven't been initialized, init them and load things
     if (hornSound == NULL) {
         // Initialize BASS
@@ -532,6 +577,7 @@ void VehicleDemo::clientMoveAndDisplay()
         BASS_ChannelStop(idleSound);
     } else {
         BASS_ChannelPlay(idleSound, false);
+        BASS_ChannelSetPosition(accelSound, 0, BASS_POS_BYTE);
         BASS_ChannelStop(accelSound);
     }
     if (horn) {
@@ -664,10 +710,10 @@ void VehicleDemo::specialKeyboardUp(int key, int x, int y)
 		break;
 		}
     case GLUT_KEY_LEFT:
-        left = 0.f;
+        steering = 0.0f;
         break;
     case GLUT_KEY_RIGHT:
-        right = 0.f;
+        steering = 0.0f;
         break;
 	default:
 		DemoApplication::specialKeyboardUp(key,x,y);
@@ -686,7 +732,7 @@ void VehicleDemo::specialKeyboard(int key, int x, int y)
     {
     case GLUT_KEY_LEFT : 
 		{
-            left = 1.0f;
+            steering = -1.0f;
 			//gVehicleSteering += steeringIncrement;
 			//if (	gVehicleSteering > steeringClamp)
 			//		gVehicleSteering = steeringClamp;
@@ -695,7 +741,7 @@ void VehicleDemo::specialKeyboard(int key, int x, int y)
 		}
     case GLUT_KEY_RIGHT : 
 		{
-            right = 1.0f;
+            steering = 1.0f;
 			//gVehicleSteering -= steeringIncrement;
 			//if (	gVehicleSteering < -steeringClamp)
 			//		gVehicleSteering = -steeringClamp;
@@ -792,14 +838,11 @@ void	VehicleDemo::updateCamera()
 
 }
 
-void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount) {
+void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount, btScalar yCount, btScalar zCount, btScalar scaling) {
 	//create a few dynamic rigidbodies
 	// Re-using the same collision is better for memory usage and performance
 
-    btScalar SCALING = 1.0f;
-
-
-	btBoxShape* colShape = new btBoxShape(btVector3(SCALING*1,SCALING*1,SCALING*1));
+	btBoxShape* colShape = new btBoxShape(btVector3(scaling*1,scaling*1,scaling*1));
 	//btCollisionShape* colShape = new btSphereShape(btScalar(1.));
 	m_collisionShapes.push_back(colShape);
 
@@ -826,7 +869,7 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 		{
 			for(int j = 0;j<zCount;j++)
 			{
-				startTransform.setOrigin(SCALING*btVector3(
+				startTransform.setOrigin(scaling*btVector3(
 									btScalar(2.0*i + start_x),
 									btScalar(20+2.0*k + start_y),
 									btScalar(2.0*j + start_z)));
@@ -852,6 +895,92 @@ void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
     }
 }
 
+
+// Tell the compiler to load XInput.lib for the xbox controller support
+#pragma comment(lib, "XInput.lib")
+
 void VehicleDemo::pollInput() {
-    // IMPLEMENT ME WITH THE JOYSTICK CODE
+    // Read the dpad using xinput, as the joystick code doesn't return the dpad data for some reason.
+    XINPUT_STATE controllerState;
+    ZeroMemory(&controllerState, sizeof(XINPUT_STATE));
+    DWORD result = XInputGetState(0, &controllerState);
+
+    // If no controller detected
+    if (result != ERROR_SUCCESS) {
+        return;
+    }
+
+    // Accelerate and brake
+    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
+        accel = 1.0f;
+    } else {
+        accel = 0.0f;
+    }
+    if (controllerState.Gamepad.wButtons & (XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_X)) {
+        brake = 1.0f;
+    } else {
+        brake = 0.0f;
+    }
+
+    // Boost
+    if (controllerState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
+        boost = controllerState.Gamepad.bRightTrigger / 255.0f;
+    } else {
+        boost = 0.0f;
+    }
+
+    // Horn!
+    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y) {
+        horn = true;
+    }
+
+    // Steering
+    if (controllerState.Gamepad.sThumbLX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE || controllerState.Gamepad.sThumbLX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+        steering = controllerState.Gamepad.sThumbLX / (float)SHRT_MAX;
+    } else {
+        steering = 0.0f;
+    }
+}
+
+void VehicleDemo::setVibrate(float percent) {
+    // Xbox code aided by: http://www.codeproject.com/Articles/26949/Xbox-360-Controller-Input-in-C-with-XInput
+
+    // Create a Vibraton State
+    XINPUT_VIBRATION vibration;
+
+    // Zeroise the Vibration
+    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+
+    // Set the Vibration Values
+    vibration.wLeftMotorSpeed = percent * USHRT_MAX;
+    vibration.wRightMotorSpeed = percent * USHRT_MAX;
+
+    // Vibrate the controller
+    XInputSetState(0, &vibration);
+}
+
+void VehicleDemo::tickCallback(btDynamicsWorld *world, btScalar timeStep) {
+    //Assume world->stepSimulation or world->performDiscreteCollisionDetection has been called
+    /*
+	int numManifolds = world->getDispatcher()->getNumManifolds();
+	for (int i=0;i<numManifolds;i++)
+	{
+		btPersistentManifold* contactManifold =  world->getDispatcher()->getManifoldByIndexInternal(i);
+		const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
+		const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+	
+		int numContacts = contactManifold->getNumContacts();
+		for (int j=0;j<numContacts;j++)
+		{
+			btManifoldPoint& pt = contactManifold->getContactPoint(j);
+			if (pt.getDistance()<0.f)
+			{
+				const btVector3& ptA = pt.getPositionWorldOnA();
+				const btVector3& ptB = pt.getPositionWorldOnB();
+				const btVector3& normalOnB = pt.m_normalWorldOnB;
+			}
+		}
+	}
+    printf("%i things collided\n", numManifolds);
+    */
 }

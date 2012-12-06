@@ -253,7 +253,9 @@ public:
 		m_idle = idle;
 	}
 
-
+	// Morgan's Code
+	void printw2d (float x, float y, char* format, ...);
+	void printw3d (float x, float y, float z, char* format, ...);
 };
 
 #endif //DEMO_APPLICATION_H
