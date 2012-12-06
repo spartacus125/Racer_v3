@@ -67,14 +67,14 @@ float	gEngineForce = 0.f;
 float	gBreakingForce = 0.f;
 
 float	maxEngineForce = 2500.f;//this should be engine/velocity dependent
-float	maxBreakingForce = 100.f;
+float	maxBreakingForce = 200.f;
 
 float	gVehicleSteering = 0.f;
-float	steeringIncrement = 0.5f;
-float	steeringClamp = 0.5f;
+float	steeringIncrement = .1f;
+float	steeringClamp = .25f;
 float	wheelRadius = 0.5f;
 float	wheelWidth = 0.4f;
-float	wheelFriction = 1000;//BT_LARGE_FLOAT;
+float	wheelFriction = 10;//BT_LARGE_FLOAT;
 float	suspensionStiffness = 20.f;
 float	suspensionDamping = 2.3f;
 float	suspensionCompression = 4.4f;
@@ -446,7 +446,7 @@ void VehicleDemo::renderme()
 	btVector3	worldBoundsMin,worldBoundsMax;
 	getDynamicsWorld()->getBroadphase()->getBroadphaseAabb(worldBoundsMin,worldBoundsMax);
 
-
+	bool inAir = false;
 
 	for (i=0;i<m_vehicle->getNumWheels();i++)
 	{
@@ -455,6 +455,9 @@ void VehicleDemo::renderme()
 		//draw wheels (cylinders)
 		m_vehicle->getWheelInfo(i).m_worldTransform.getOpenGLMatrix(m);
 		m_shapeDrawer->drawOpenGL(m,m_wheelShape,wheelColor,getDebugMode(),worldBoundsMin,worldBoundsMax);
+
+		btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
+		wheel.m_frictionSlip = wheelFriction;
 	}
 
 	btDefaultMotionState* myMotionState = (btDefaultMotionState*)m_vehicle->getRigidBody()->getMotionState();
@@ -478,7 +481,10 @@ void VehicleDemo::renderme()
 				ao++;
 		score += (ao-1);
 		// Draw the Score to the screen
-		DemoApplication::printw2d(10, 10, "SCORE: %i", score);
+		DemoApplication::printw2d(20, 20, "SCORE: %i", score);
+		DemoApplication::printw2d(20, 40, "SKID VALUE: %i", m_vehicle->getWheelInfo(0).m_skidInfo);
+		DemoApplication::printw2d(20, 60, "wheelFriction: %f", wheelFriction);
+		DemoApplication::printw2d(20, 80, "SPEED: %f km/h", m_vehicle->getCurrentSpeedKmHour());
 	}
 }
 
@@ -493,7 +499,7 @@ void VehicleDemo::clientMoveAndDisplay()
 
 	// Get direction of wheel
     if (steering != 0.0f) {
-        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * dt));
+        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * 4 * dt));
     } else {
         gVehicleSteering = m_vehicle->getSteeringValue(0);
         if (gVehicleSteering < 0) {
@@ -870,11 +876,20 @@ void VehicleDemo::createCube(btScalar x, btScalar y, btScalar z, btScalar xCount
 }
 
 void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
-    if (key == 'h') {
-        horn = true;
-    } else {
-        DemoApplication::keyboardCallback(key, x, y);
-    }
+	switch(key){
+	case 'h':
+		horn = true;
+		break;
+	case '+':
+		wheelFriction += 1;
+		break;
+	case '-':
+		wheelFriction -= 1;
+		break;
+	default:
+		DemoApplication::keyboardCallback(key, x, y);
+		break;
+	}
 }
 
 
