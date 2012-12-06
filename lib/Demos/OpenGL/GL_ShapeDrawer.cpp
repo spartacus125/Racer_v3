@@ -401,7 +401,7 @@ void renderSquareA(float x, float y, float z)
 inline void glDrawVector(const btVector3& v) { glVertex3d(v[0], v[1], v[2]); }
 
 
-void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, const btVector3& color,int	debugMode,const btVector3& worldBoundsMin,const btVector3& worldBoundsMax)
+void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, const btVector3& color,int	debugMode,const btVector3& worldBoundsMin,const btVector3& worldBoundsMax, unsigned int texId)
 {
 	
 	if (shape->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE)
@@ -520,6 +520,7 @@ void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, cons
 			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 			gluBuild2DMipmaps(GL_TEXTURE_2D,3,256,256,GL_RGB,GL_UNSIGNED_BYTE,image);
+
 			delete[] image;
 	
 			
@@ -527,7 +528,7 @@ void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, cons
 
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
-		glScalef(0.025f,0.025f,0.025f);
+		glScalef(0.0125f,0.0125f,0.0125f);
 		glMatrixMode(GL_MODELVIEW);
 
 		static const GLfloat	planex[]={1,0,0,0};
