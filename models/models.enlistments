@@ -19,4 +19,4 @@ tireBL tire::collidable -.34 .15 .475 0 3.14159 0 1 1 1 car
 tireBR tire::collidable .34 .15 .475 0 0 0 1 1 1 car
 
 # Non-collidables
-environment track_3 0 0 0 0 0 0 1 1 1 NULL
+environment track_4 0 0 0 0 0 0 1 1 1 NULL
