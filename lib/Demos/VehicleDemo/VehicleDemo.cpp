@@ -13,6 +13,14 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+// xbox controller includes
+// No MFC
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+//#include <MMSystem.h>
+#include <Xinput.h>
+#include <limits.h>
+
 /// September 2006: VehicleDemo is work in progress, this file is mostly just a placeholder
 /// This VehicleDemo file is very early in development, please check it later
 /// One todo is a basic engine model:
@@ -484,8 +492,8 @@ void VehicleDemo::clientMoveAndDisplay()
     //printf("Delta: %f\n", dt);
 
 	// Get direction of wheel
-    if (left != 0.f || right != 0.f) {
-        gVehicleSteering = min(steeringClamp, max(-steeringClamp, m_vehicle->getSteeringValue(0) + (left + -right) * steeringIncrement * dt));
+    if (steering != 0.0f) {
+        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * dt));
     } else {
         gVehicleSteering = m_vehicle->getSteeringValue(0);
         if (gVehicleSteering < 0) {
@@ -512,6 +520,25 @@ void VehicleDemo::clientMoveAndDisplay()
 		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
 
 	}
+
+    // Speed cap - 200 Km/H
+    btVector3 velocity = m_vehicle->getRigidBody()->getLinearVelocity();
+    btScalar speed = velocity.length();
+    btScalar maxSpeed = 75.0f;
+    /* Appears to break things.
+    if (speed > maxSpeed) {
+        velocity *= speed / maxSpeed;
+        speed = velocity.length();
+        m_vehicle->getRigidBody()->setLinearVelocity(velocity);
+    }
+    */
+    
+    // Update vibration state, currently purely based on speed.
+    if (speed > 25.0f) {
+        setVibrate(min((speed - 25.0f) / (maxSpeed - 25.0f), 1.0f));
+    } else {
+        setVibrate(0.0f);
+    }
 
     // If the sounds haven't been initialized, init them and load things
     if (hornSound == NULL) {
@@ -662,10 +689,10 @@ void VehicleDemo::specialKeyboardUp(int key, int x, int y)
 		break;
 		}
     case GLUT_KEY_LEFT:
-        left = 0.f;
+        steering = 0.0f;
         break;
     case GLUT_KEY_RIGHT:
-        right = 0.f;
+        steering = 0.0f;
         break;
 	default:
 		DemoApplication::specialKeyboardUp(key,x,y);
@@ -684,7 +711,7 @@ void VehicleDemo::specialKeyboard(int key, int x, int y)
     {
     case GLUT_KEY_LEFT : 
 		{
-            left = 1.0f;
+            steering = -1.0f;
 			//gVehicleSteering += steeringIncrement;
 			//if (	gVehicleSteering > steeringClamp)
 			//		gVehicleSteering = steeringClamp;
@@ -693,7 +720,7 @@ void VehicleDemo::specialKeyboard(int key, int x, int y)
 		}
     case GLUT_KEY_RIGHT : 
 		{
-            right = 1.0f;
+            steering = 1.0f;
 			//gVehicleSteering -= steeringIncrement;
 			//if (	gVehicleSteering < -steeringClamp)
 			//		gVehicleSteering = -steeringClamp;
@@ -850,6 +877,59 @@ void VehicleDemo::keyboardCallback(unsigned char key, int x, int y) {
     }
 }
 
+
+// Tell the compiler to load XInput.lib for the xbox controller support
+#pragma comment(lib, "XInput.lib")
+
 void VehicleDemo::pollInput() {
-    // IMPLEMENT ME WITH THE JOYSTICK CODE
+    // Read the dpad using xinput, as the joystick code doesn't return the dpad data for some reason.
+    XINPUT_STATE controllerState;
+    ZeroMemory(&controllerState, sizeof(XINPUT_STATE));
+    DWORD result = XInputGetState(0, &controllerState);
+
+    // If no controller detected
+    if (result != ERROR_SUCCESS) {
+        return;
+    }
+
+    // Accelerate and brake
+    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
+        accel = 1.0f;
+    } else {
+        accel = 0.0f;
+    }
+    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B) {
+        brake = 1.0f;
+    } else {
+        brake = 0.0f;
+    }
+
+    // Horn!
+    if (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y) {
+        horn = true;
+    }
+
+    // Steering
+    if (controllerState.Gamepad.sThumbLX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE || controllerState.Gamepad.sThumbLX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+        steering = controllerState.Gamepad.sThumbLX / (float)SHRT_MAX;
+    } else {
+        steering = 0.0f;
+    }
+}
+
+void VehicleDemo::setVibrate(float percent) {
+    // Xbox code aided by: http://www.codeproject.com/Articles/26949/Xbox-360-Controller-Input-in-C-with-XInput
+
+    // Create a Vibraton State
+    XINPUT_VIBRATION vibration;
+
+    // Zeroise the Vibration
+    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+
+    // Set the Vibration Values
+    vibration.wLeftMotorSpeed = percent * USHRT_MAX;
+    vibration.wRightMotorSpeed = percent * USHRT_MAX;
+
+    // Vibrate the controller
+    XInputSetState(0, &vibration);
 }
