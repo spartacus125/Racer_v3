@@ -514,6 +514,7 @@ void VehicleDemo::clientMoveAndDisplay()
         BASS_ChannelStop(idleSound);
     } else {
         BASS_ChannelPlay(idleSound, false);
+        BASS_ChannelSetPosition(accelSound, 0, BASS_POS_BYTE);
         BASS_ChannelStop(accelSound);
     }
     if (horn) {
