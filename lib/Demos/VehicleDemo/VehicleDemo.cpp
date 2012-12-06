@@ -480,6 +480,7 @@ void VehicleDemo::renderme()
     glEnable(GL_LIGHT0);
     GLfloat lightPosition[] = {50.0f, 30.0f, 50.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    glShadeModel(GL_SMOOTH);
 			
 	DrawObject(m, CAR);
 
