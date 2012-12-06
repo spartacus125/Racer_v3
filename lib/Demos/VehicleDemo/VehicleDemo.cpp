@@ -104,7 +104,6 @@ hornSound(NULL),
 idleSound(NULL),
 accelSound(NULL)
 {
-	ObjectMan::GetInstance();
 	m_vehicle = 0;
 	m_wheelShape = 0;
 	m_cameraPosition = btVector3(30,30,30);
@@ -350,11 +349,11 @@ const float TRIANGLE_SIZE=20.f;
 	m_collisionShapes.push_back(compound);
 	btTransform localTrans;
 	localTrans.setIdentity();
-	localTrans.setOrigin(btVector3(0, .3, 0));
+	localTrans.setOrigin(btVector3(0, 0, 0));
 
 	compound->addChildShape(localTrans,chassisShape);
 
-	tr.setOrigin(btVector3(0,0.f,0));
+	tr.setOrigin(btVector3(0.0f,0.45f,-0.1f));
 
 	m_carChassis = localCreateRigidBody(800,tr,compound);//chassisShape);
 	//m_carChassis->setDamping(0.2,0.2);
@@ -447,7 +446,7 @@ void VehicleDemo::renderme()
 	int i;
 
 
-	btVector3 wheelColor(1,0,0);
+	btVector3 wheelColor(0.1,0.1,0.1);
 
 	btVector3	worldBoundsMin,worldBoundsMax;
 	getDynamicsWorld()->getBroadphase()->getBroadphaseAabb(worldBoundsMin,worldBoundsMax);
@@ -468,11 +467,14 @@ void VehicleDemo::renderme()
 
 	btVector3 wireColor(1.f,1.0f,0.5f); //wants deactivation
 
-	m_shapeDrawer->drawOpenGL(m, m_chassisShape, wireColor, getDebugMode(), worldBoundsMin, worldBoundsMax);
-
-
-	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
+	//m_shapeDrawer->drawOpenGL(m, m_chassisShape, wireColor, getDebugMode(), worldBoundsMin, worldBoundsMax, TextureMan::GetInstance()->Get("car"));
 	
+	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	//glDisable(GL_COLOR_MATERIAL);
+	//glDisable(GL_TEXTURE_GEN_T);
+	//glDisable(GL_TEXTURE_GEN_R);
+			
+	DrawObject(m, CAR);
 
 	// UI TEXT CODE
 	{
@@ -486,6 +488,19 @@ void VehicleDemo::renderme()
 		// Draw the Score to the screen
 		DemoApplication::printw2d(10, 10, "SCORE: %i", score);
 	}
+
+	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
+	//  Uncomment this line to see the convex hull rendered with the car
+	//DemoApplication::renderme();
+}
+
+void VehicleDemo::DrawObject(btScalar* mat, string id)
+{
+	glPushMatrix();
+	glMultMatrixf(mat);
+	Geometry* geo = ObjectMan::GetId(id);
+	geo->Draw();
+	glPopMatrix();
 }
 
 void VehicleDemo::clientMoveAndDisplay()

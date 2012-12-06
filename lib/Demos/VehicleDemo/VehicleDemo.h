@@ -81,6 +81,7 @@ class VehicleDemo : public GlutDemoApplication
 	virtual void specialKeyboardUp(int key, int x, int y);
 
 	void renderme();
+	void DrawObject(btScalar* mat, string id);
 
 	void initPhysics();
 

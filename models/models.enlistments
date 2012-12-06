@@ -12,11 +12,11 @@
 # marked with the '::collidable' tag directly after the name.
 
 # Collidables
-car car_2::collidable 0 0 0 0 0 0 10 10 10 NULL
+car car_3::collidable 0 0 0 0 0 0 10 10 10 NULL
 tireFL tire::collidable -.34 .15 -.54 0 3.14159 0 1 1 1 car
 tireFR tire::collidable .34 .15 -.54 0 0 0 1 1 1 car
 tireBL tire::collidable -.34 .15 .475 0 3.14159 0 1 1 1 car
 tireBR tire::collidable .34 .15 .475 0 0 0 1 1 1 car
 
 # Non-collidables
-environment track_1 0 0 0 0 0 0 1 1 1 NULL
+environment track_4 0 0 0 0 0 0 1 1 1 NULL
