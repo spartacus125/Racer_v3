@@ -100,7 +100,7 @@ private:
 
     // Horrible practice to not pull this into another class, but its easier to just reuse the code they gave us for now.
     // So here is the input manager's code, essentially.
-	float forward, back, left, right, accel, brake;
+	float forward, back, steering, accel, brake;
     bool horn;
 
     // This should poll any input and update the state methods that need them.
@@ -110,12 +110,13 @@ private:
     void resetInput() {
         forward = 0;
         back = 0;
-        left = 0;
-        right = 0;
+        steering = 0;
         accel = 0;
         brake = 0;
         horn = false;
     }
+
+    void setVibrate(float percent = 0.0f);
 
     HSTREAM hornSound;
     HSTREAM idleSound;
