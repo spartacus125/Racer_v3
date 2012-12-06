@@ -77,30 +77,12 @@ void DemoApplication::printw2d (float x, float y, char* format, ...)
 
     //  Initialize a variable argument list
     va_start(args, format);
-
-    //  Return the number of characters in the string referenced the list of arguments.
-    // _vscprintf doesn't count terminating '\0' (that's why +1)
     len = _vscprintf(format, args) + 1;
-
-    //  Allocate memory for a string of the specified size
     text = (char*) malloc(len * sizeof(char));
-
-    //  Write formatted output using a pointer to the list of arguments
     vsprintf_s(text, len, format, args);
-
-    //  End using variable argument list
     va_end(args);
 
-	// Switch to an Orthographic View
-	glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, m_glutScreenWidth, 0, m_glutScreenHeight);
-    glScalef(1, -1, 1);
-    glTranslatef(0, -m_glutScreenHeight, 0);
-    glMatrixMode(GL_MODELVIEW);
-
-	glDisable(GL_DEPTH_TEST);
+	setOrthographicProjection();
 
     glRasterPos2i(x, y);
     len = strlen(text);
@@ -109,13 +91,7 @@ void DemoApplication::printw2d (float x, float y, char* format, ...)
         glutBitmapCharacter(font_style, text[i]);
     }
 
-	// Switch back to Projection View
-
-	glEnable(GL_DEPTH_TEST);
-
-	glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
+	resetPerspectiveProjection();
 
     //  Free the allocated memory for the string
     free(text);

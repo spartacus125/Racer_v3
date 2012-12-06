@@ -72,6 +72,8 @@ float	suspensionDamping = 2.3f;
 float	suspensionCompression = 4.4f;
 float	rollInfluence = 0.1f;//1.0f;
 
+int score = 0;
+
 
 btScalar suspensionRestLength(0.6);
 
@@ -456,7 +458,20 @@ void VehicleDemo::renderme()
 
 
 	DemoApplication::renderme((btCollisionObject*)m_vehicle->getRigidBody());
-	DemoApplication::printw2d(200, 200, "THIS IS SUPPOSED TO WORK!!!");
+	
+
+	// UI TEXT CODE
+	{
+		// Calculate Score
+		int ao = 0;
+		btCollisionObjectArray objects = m_dynamicsWorld->getCollisionObjectArray();
+		for(int i=0;i<objects.size();i++)
+			if(objects[i]->isActive())
+				ao++;
+		score += (ao-1);
+		// Draw the Score to the screen
+		DemoApplication::printw2d(10, 10, "SCORE: %i", score);
+	}
 }
 
 void VehicleDemo::clientMoveAndDisplay()
