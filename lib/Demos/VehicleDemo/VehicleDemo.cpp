@@ -517,37 +517,7 @@ void VehicleDemo::clientMoveAndDisplay()
     float delta = getDeltaTimeMicroseconds();
     float dt = delta * 0.000001f;
     //printf("Delta: %f\n", dt);
-
-	// Get direction of wheel
-    if (steering != 0.0f) {
-        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * 4 * dt));
-    } else {
-        gVehicleSteering = m_vehicle->getSteeringValue(0);
-        if (gVehicleSteering < 0) {
-            gVehicleSteering += steeringIncrement * dt;
-        } else {
-            gVehicleSteering -= steeringIncrement * dt;
-        }
-    }
-    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
-    gBreakingForce = brake * maxBreakingForce;
     
-	{
-		int wheelIndex = 2;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
-		m_vehicle->setBrake(gBreakingForce,wheelIndex);
-		wheelIndex = 3;
-		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
-		m_vehicle->setBrake(gBreakingForce,wheelIndex);
-
-
-		wheelIndex = 0;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
-		wheelIndex = 1;
-		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
-
-	}
-
     // Speed cap - 200 Km/H
     btVector3 velocity = m_vehicle->getRigidBody()->getLinearVelocity();
     btScalar speed = velocity.length();
@@ -566,6 +536,39 @@ void VehicleDemo::clientMoveAndDisplay()
     } else {
         setVibrate(0.0f);
     }
+
+	// Get direction of wheel
+    if (steering != 0.0f) {
+        gVehicleSteering = min(steeringClamp * fabs(steering), max(-steeringClamp * fabs(steering), m_vehicle->getSteeringValue(0) - steering * steeringIncrement * 4 * dt));
+    } else {
+        gVehicleSteering = m_vehicle->getSteeringValue(0);
+        if (gVehicleSteering < 0) {
+            gVehicleSteering += steeringIncrement * dt;
+        } else {
+            gVehicleSteering -= steeringIncrement * dt;
+        }
+    }
+    gEngineForce = accel * maxEngineForce * (boost > 0.0f ? boost * 5.0f : 1.0f);
+    gBreakingForce = brake * maxBreakingForce;
+    if (speed < 5.0f && accel < 1.0f) {
+        gEngineForce = brake * maxEngineForce * -0.5f;
+    }
+
+	{
+		int wheelIndex = 2;
+		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->setBrake(gBreakingForce,wheelIndex);
+		wheelIndex = 3;
+		m_vehicle->applyEngineForce(gEngineForce,wheelIndex);
+		m_vehicle->setBrake(gBreakingForce,wheelIndex);
+
+
+		wheelIndex = 0;
+		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+		wheelIndex = 1;
+		m_vehicle->setSteeringValue(gVehicleSteering,wheelIndex);
+
+	}
 
     // If the sounds haven't been initialized, init them and load things
     if (hornSound == NULL) {
